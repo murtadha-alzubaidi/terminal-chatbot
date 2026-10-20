@@ -1,6 +1,6 @@
 import os
 import requests
-
+import json
 api_key = os.environ["GEMINI_API_KEY"]
 url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:generateContent"
 headers = {"x-goog-api-key": api_key}
@@ -21,6 +21,8 @@ history=[]
 while True:
     question= input("You: ")
     if question=="exit":
+        with open("chat_history.json","w")as f:
+            json.dump(history,f,indent=4)
         print("Bye!")
         break
     if question=="":
