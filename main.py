@@ -14,10 +14,15 @@ def ask(system, history):
     if r.status_code == 200:
         return r.json()["candidates"][0]["content"]["parts"][0]["text"]
     else:
-        return f"Error {r.status_code}: {r.text}"
+        print(f"Error {r.status_code}: {r.text}")
+        return None
 
 system = "You are a helpful assistant. Answer briefly"
-history=[]
+try:
+    with open("chat_history.json","r") as f:
+        history =json.load(f)
+except FileNotFoundError:
+    history = []
 while True:
     question= input("You: ")
     if question=="exit":
@@ -27,10 +32,16 @@ while True:
         break
     if question=="":
         continue
+    user_message = {"role": "user", "parts": [{"text": question}]}
     try:
-        history.append({"role":"user","parts":[{"text":question}]})
-        answer= ask(system,history)
-        history.append({"role":"model","parts":[{"text": answer}]})
-        print("Bot:", answer)
+        answer = ask(system, history + [user_message])
     except requests.exceptions.ConnectionError:
-        print("no internet connection")
+        print("No internet connection")
+        continue
+
+    if answer is None:
+        continue
+
+    history.append(user_message)
+    history.append({"role": "model", "parts": [{"text": answer}]})
+    print("Bot:", answer)
